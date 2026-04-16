@@ -10,9 +10,9 @@ import { motion, useInView, useAnimation, Variant } from "framer-motion";
 
 export const ANIM_EASE = [0.22, 1, 0.36, 1]; // Custom cubic-bezier for elegant motion
 
-export const TRANSITION_SLOW = { duration: 1, ease: ANIM_EASE };
-export const TRANSITION_MEDIUM = { duration: 0.8, ease: ANIM_EASE };
-export const TRANSITION_FAST = { duration: 0.5, ease: ANIM_EASE };
+export const TRANSITION_SLOW = { duration: 1, ease: ANIM_EASE } as any;
+export const TRANSITION_MEDIUM = { duration: 0.8, ease: ANIM_EASE } as any;
+export const TRANSITION_FAST = { duration: 0.5, ease: ANIM_EASE } as any;
 
 export const VARIANTS = {
   fadeInUp: {
@@ -70,16 +70,27 @@ export const AnimatedText = ({
   text, 
   el: Tag = "p", 
   className,
-  delay = 0 
+  delay = 0,
+  highlight = ""
 }: { 
   text: string; 
-  el?: keyof JSX.IntrinsicElements; 
+  el?: React.ElementType; 
   className?: string; 
-  delay?: number
+  delay?: number;
+  highlight?: string | string[];
 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.5 });
   const words = text.split(" ");
+
+  // Helper to check if a word should be highlighted
+  const isHighlighted = (word: string) => {
+    const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+    if (Array.isArray(highlight)) {
+      return highlight.some(h => h.toLowerCase() === cleanWord.toLowerCase());
+    }
+    return highlight && cleanWord.toLowerCase() === highlight.toLowerCase();
+  };
 
   return (
     <Tag ref={ref} className={className}>
@@ -97,7 +108,12 @@ export const AnimatedText = ({
                 animate: { y: 0, opacity: 1 }
               }}
               transition={TRANSITION_MEDIUM}
-              style={{ display: "inline-block", marginRight: "0.25em" }}
+              style={{ 
+                display: "inline-block", 
+                marginRight: "0.25em",
+                color: isHighlighted(word) ? "#00e5ff" : "inherit",
+                fontWeight: isHighlighted(word) ? 700 : "inherit"
+              }}
             >
               {word}
             </motion.span>
